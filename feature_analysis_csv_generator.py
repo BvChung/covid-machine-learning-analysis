@@ -3,7 +3,7 @@ import pandas as pd
 from abc import ABC, abstractmethod
 
 
-class StatisticalAnalysisCSV(ABC):
+class FeatureAnalysisCSVGenerator(ABC):
     def __init__(self):
         pass
 
@@ -12,7 +12,7 @@ class StatisticalAnalysisCSV(ABC):
         pass
 
 
-class CorrelationCSV(StatisticalAnalysisCSV):
+class CorrelationCSV(FeatureAnalysisCSVGenerator):
     def __init__(self):
         pass
 
@@ -24,7 +24,7 @@ class CorrelationCSV(StatisticalAnalysisCSV):
             print("Unable to create correlation csv file, error: ", err)
 
 
-class CovarianceCSV(StatisticalAnalysisCSV):
+class CovarianceCSV(FeatureAnalysisCSVGenerator):
     def __init__(self):
         pass
 
