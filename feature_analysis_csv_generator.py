@@ -12,7 +12,7 @@ class FeatureAnalysisCSVGenerator(ABC):
         pass
 
 
-class CorrelationCSV(FeatureAnalysisCSVGenerator):
+class CorrelationCSVGenerator(FeatureAnalysisCSVGenerator):
     def __init__(self):
         pass
 
@@ -24,7 +24,7 @@ class CorrelationCSV(FeatureAnalysisCSVGenerator):
             print("Unable to create correlation csv file, error: ", err)
 
 
-class CovarianceCSV(FeatureAnalysisCSVGenerator):
+class CovarianceCSVGenerator(FeatureAnalysisCSVGenerator):
     def __init__(self):
         pass
 
