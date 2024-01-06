@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression, LassoCV, RidgeCV
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
-from feature_analysis_csv import CorrelationCSV, CovarianceCSV
+from covid_analysis_machine_learning.feature_analysis_csv_generator import CorrelationCSV, CovarianceCSV
 from regression_metrics import RegressionMetrics, DisplayMetrics
 
 
