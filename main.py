@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression, LassoCV, RidgeCV
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import PredictionErrorDisplay
 from feature_analysis_csv_generator import CorrelationCSVGenerator, CovarianceCSVGenerator
 from regression_metrics import TrainingSetRegressionMetrics, TestingSetRegressionMetrics, DisplayRegressionMetrics
+from regression_coefficients import RegressionCoefficients
 from sklearn.model_selection import train_test_split
 
 
@@ -47,11 +49,14 @@ def main():
         X, y, test_size=0.3, shuffle=True, random_state=42)
 
     display_metrics_table = DisplayRegressionMetrics()
+    display_regression_coefficients = RegressionCoefficients()
+
     training_set_metrics_calculator = TrainingSetRegressionMetrics(
         X_train=X_train, y_train=y_train, k_folds=10)
     testing_set_metrics_calculator = TestingSetRegressionMetrics(
         X_test=X_test, y_test=y_test)
 
+    # Linear Regression Model
     lin_reg_model = make_pipeline(
         StandardScaler(), LinearRegression()).fit(X_train, y_train)
 
@@ -60,18 +65,24 @@ def main():
     display_metrics_table.display_table(
         metrics=lin_reg_training_set_metrics, title="Least Squares Linear Regression Training Metrics")
 
-    linear_coef = lin_reg_model.named_steps['linearregression'].coef_
-    y_intercept = lin_reg_model.named_steps['linearregression'].intercept_
-    print(f"Linear Regression Coefficients: {linear_coef}")
-    print(f"Linear Regression Y Intercept: {y_intercept}")
-
     lin_reg_testing_set_metrics = testing_set_metrics_calculator.get_regression_metrics(
         lin_reg_model)
     display_metrics_table.display_table(
-        lin_reg_testing_set_metrics, title="Least Squares Linear Regression Final Metrics")
+        metrics=lin_reg_testing_set_metrics, title="Least Squares Linear Regression Final Metrics")
 
-    lasso_model = make_pipeline(StandardScaler(), LassoCV(cv=10))
-    lasso_model.fit(X_train, y_train)
+    linear_coefs = lin_reg_model.named_steps['linearregression'].coef_
+    y_intercept = lin_reg_model.named_steps['linearregression'].intercept_
+    feature_names = lin_reg_model[:-1].get_feature_names_out()
+
+    display_regression_coefficients.print_coefficients(
+        coefs=linear_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Linear")
+    display_regression_coefficients.plot_coefficients(
+        coefs=linear_coefs, feature_names=feature_names, model_name="Linear")
+
+    # Lasso Regression Model
+    lasso_model = make_pipeline(
+        StandardScaler(), LassoCV(cv=10)).fit(X_train, y_train)
+    lasso_y_pred = lasso_model.predict(X_test)
 
     lasso_training_set_metrics = training_set_metrics_calculator.get_regression_metrics(
         lasso_model)
@@ -83,8 +94,27 @@ def main():
     display_metrics_table.display_table(
         lasso_testing_set_metrics, title="Lasso Linear Regression Final Metrics")
 
-    ridge_model = make_pipeline(StandardScaler(), RidgeCV(cv=10))
-    ridge_model.fit(X_train, y_train)
+    print(
+        f'Best performing alpha: {lasso_model.named_steps["lassocv"].alpha_}')
+
+    _, ax = plt.subplots(1, 1)
+    display = PredictionErrorDisplay.from_predictions(
+        y_test, lasso_y_pred, kind="actual_vs_predicted", ax=ax, scatter_kwargs={'alpha': 0.5})
+    ax.set_title("Lasso model, optimum regularization")
+    plt.show()
+
+    lasso_coefs = lasso_model.named_steps['lassocv'].coef_
+    y_intercept = lasso_model.named_steps['lassocv'].intercept_
+    feature_names = lasso_model[:-1].get_feature_names_out()
+
+    display_regression_coefficients.print_coefficients(
+        coefs=lasso_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Lasso")
+    display_regression_coefficients.plot_coefficients(
+        coefs=lasso_coefs, feature_names=feature_names, model_name="Lasso")
+
+    # Ridge Regression Model
+    ridge_model = make_pipeline(
+        StandardScaler(), RidgeCV(cv=10)).fit(X_train, y_train)
 
     ridge_regression_metrics = training_set_metrics_calculator.get_regression_metrics(
         ridge_model)
@@ -95,6 +125,15 @@ def main():
         ridge_model)
     display_metrics_table.display_table(
         ridge_testing_set_metrics, title="Ridge Linear Regression Final Metrics")
+
+    ridge_coefs = ridge_model.named_steps['ridgecv'].coef_
+    y_intercept = ridge_model.named_steps['ridgecv'].intercept_
+    feature_names = ridge_model[:-1].get_feature_names_out()
+
+    display_regression_coefficients.print_coefficients(
+        coefs=ridge_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Ridge")
+    display_regression_coefficients.plot_coefficients(
+        coefs=ridge_coefs, feature_names=feature_names, model_name="Ridge")
 
 
 if __name__ == "__main__":

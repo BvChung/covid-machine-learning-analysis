@@ -4,9 +4,31 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import cross_val_score, KFold
 import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score, mean_squared_error, mean_absolute_error
+from abc import ABC, abstractmethod
 
 
-class TrainingSetRegressionMetrics:
+class RegressionMetrics(ABC):
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def _get_r2_score(self, model: Pipeline) -> ndarray:
+        pass
+
+    @abstractmethod
+    def _get_mse_score(self, model: Pipeline) -> ndarray:
+        pass
+
+    @abstractmethod
+    def _get_mas_score(self, model: Pipeline) -> ndarray:
+        pass
+
+    @abstractmethod
+    def get_regression_metrics(self, model: Pipeline) -> dict[str, float]:
+        pass
+
+
+class TrainingSetRegressionMetrics(RegressionMetrics):
     def __init__(self, X_train: DataFrame, y_train: DataFrame,  k_folds: int = 10):
         self.k_folds = KFold(n_splits=k_folds, shuffle=True, random_state=42)
         self.X_train = X_train
@@ -33,7 +55,7 @@ class TrainingSetRegressionMetrics:
         }
 
 
-class TestingSetRegressionMetrics:
+class TestingSetRegressionMetrics(RegressionMetrics):
     def __init__(self, X_test: DataFrame, y_test: DataFrame):
         self.X_test = X_test
         self.y_test = y_test
