@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -12,7 +13,11 @@ from sklearn.model_selection import train_test_split
 
 
 def main():
-    us_covid_records_df = pd.read_csv('dataset/us_records_subset.csv')
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    file_path = os.path.join(parent_dir, 'dataset', 'us_records_subset.csv')
+
+    us_covid_records_df = pd.read_csv(file_path)
     us_covid_records_df = us_covid_records_df.dropna()
     us_covid_records_df_columns = ['date', 'total_cases', 'new_cases', 'total_deaths', 'new_deaths', 'total_cases_per_million', 'total_deaths_per_million', 'icu_patients', 'hosp_patients', 'weekly_hosp_admissions',
                                    'daily_case_change_rate', 'daily_death_change_rate', 'hospitalization_rate', 'icu_rate', 'case_fatality_rate', '7day_avg_new_cases', '7day_avg_new_deaths', 'hospitalization_need', 'icu_requirement']
@@ -74,10 +79,8 @@ def main():
     y_intercept = lin_reg_model.named_steps['linearregression'].intercept_
     feature_names = lin_reg_model[:-1].get_feature_names_out()
 
-    display_regression_coefficients.print_coefficients(
-        coefs=linear_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Linear")
     display_regression_coefficients.plot_coefficients(
-        coefs=linear_coefs, feature_names=feature_names, model_name="Linear")
+        coefs=linear_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Linear")
 
     # Lasso Regression Model
     lasso_model = make_pipeline(
@@ -107,10 +110,8 @@ def main():
     y_intercept = lasso_model.named_steps['lassocv'].intercept_
     feature_names = lasso_model[:-1].get_feature_names_out()
 
-    display_regression_coefficients.print_coefficients(
-        coefs=lasso_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Lasso")
     display_regression_coefficients.plot_coefficients(
-        coefs=lasso_coefs, feature_names=feature_names, model_name="Lasso")
+        coefs=lasso_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Lasso")
 
     # Ridge Regression Model
     ridge_model = make_pipeline(
@@ -130,10 +131,8 @@ def main():
     y_intercept = ridge_model.named_steps['ridgecv'].intercept_
     feature_names = ridge_model[:-1].get_feature_names_out()
 
-    display_regression_coefficients.print_coefficients(
-        coefs=ridge_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Ridge")
     display_regression_coefficients.plot_coefficients(
-        coefs=ridge_coefs, feature_names=feature_names, model_name="Ridge")
+        coefs=ridge_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Ridge")
 
 
 if __name__ == "__main__":

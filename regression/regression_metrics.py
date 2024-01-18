@@ -94,12 +94,8 @@ class DisplayRegressionMetrics:
             table_data.append([key, value])
 
         table = plt.table(cellText=table_data, loc='center')
-
         table.set_fontsize(12)
         table.scale(1.2, 1.5)
-
         ax.set_title(title)
-
         ax.axis('off')
-
         plt.show()
