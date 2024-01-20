@@ -8,8 +8,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import PredictionErrorDisplay
 from feature_analysis_csv_generator import CorrelationCSVGenerator, CovarianceCSVGenerator
 from regression_metrics import TrainingSetRegressionMetrics, TestingSetRegressionMetrics, DisplayRegressionMetrics
-from regression_coefficients import RegressionCoefficients
+from regression_coefficients import PlotRegressionCoefficients
 from sklearn.model_selection import train_test_split
+from display_plots import display_regression_plot, display_heatmap
 
 
 def main():
@@ -17,44 +18,34 @@ def main():
     parent_dir = os.path.dirname(current_dir)
     file_path = os.path.join(parent_dir, 'dataset', 'us_records_subset.csv')
 
-    us_covid_records_df = pd.read_csv(file_path)
-    us_covid_records_df = us_covid_records_df.dropna()
-    us_covid_records_df_columns = ['date', 'total_cases', 'new_cases', 'total_deaths', 'new_deaths', 'total_cases_per_million', 'total_deaths_per_million', 'icu_patients', 'hosp_patients', 'weekly_hosp_admissions',
-                                   'daily_case_change_rate', 'daily_death_change_rate', 'hospitalization_rate', 'icu_rate', 'case_fatality_rate', '7day_avg_new_cases', '7day_avg_new_deaths', 'hospitalization_need', 'icu_requirement']
-
-    numerical_attribute_columns = us_covid_records_df_columns[1: len(
-        us_covid_records_df_columns) - 2]
-    df_numerical_attributes_subset = pd.DataFrame(
-        data=us_covid_records_df, columns=numerical_attribute_columns)
-
     sns.set_theme(style="whitegrid")
 
-    corr_matrix = df_numerical_attributes_subset.corr()
-    plt.figure(figsize=(10, 8))
-    sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap='coolwarm')
-    plt.show()
+    us_covid_records_df = pd.read_csv(file_path)
+    us_covid_records_df = us_covid_records_df.dropna()
+    us_covid_records_columns = ['date', 'total_cases', 'new_cases', 'total_deaths', 'new_deaths', 'total_cases_per_million', 'total_deaths_per_million', 'icu_patients', 'hosp_patients', 'weekly_hosp_admissions',
+                                'daily_case_change_rate', 'daily_death_change_rate', 'hospitalization_rate', 'icu_rate', 'case_fatality_rate', '7day_avg_new_cases', '7day_avg_new_deaths', 'hospitalization_need', 'icu_requirement']
 
-    fig, axs = plt.subplots(nrows=4, ncols=4, figsize=(12, 12))
+    numerical_attribute_columns = us_covid_records_columns[1: len(
+        us_covid_records_columns) - 2]
+    numerical_attributes_subset_df = pd.DataFrame(
+        data=us_covid_records_df, columns=numerical_attribute_columns)
 
-    for i, var in enumerate(numerical_attribute_columns):
-        row = i // 4
-        col = i % 4
-        sns.regplot(data=df_numerical_attributes_subset, x=var, y="icu_patients",
-                    ax=axs[row, col], line_kws={'color': 'black'})
+    corr_matrix = numerical_attributes_subset_df.corr()
+    display_heatmap(corr_matrix, (10, 8))
 
-    plt.tight_layout()
-    plt.show()
+    display_regression_plot(numerical_attributes_subset_df,
+                            "icu_patients", numerical_attribute_columns, 4, 4, (12, 12))
 
     target_features = ['new_cases', 'new_deaths', 'hosp_patients', 'weekly_hosp_admissions',
                        'daily_case_change_rate', 'daily_death_change_rate', '7day_avg_new_cases', '7day_avg_new_deaths']
 
-    X = df_numerical_attributes_subset[target_features]
-    y = df_numerical_attributes_subset['icu_patients']
+    X = numerical_attributes_subset_df[target_features]
+    y = numerical_attributes_subset_df['icu_patients']
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.3, shuffle=True, random_state=42)
 
     display_metrics_table = DisplayRegressionMetrics()
-    display_regression_coefficients = RegressionCoefficients()
+    plot_regression_coefficients = PlotRegressionCoefficients()
 
     training_set_metrics_calculator = TrainingSetRegressionMetrics(
         X_train=X_train, y_train=y_train, k_folds=10)
@@ -79,7 +70,7 @@ def main():
     y_intercept = lin_reg_model.named_steps['linearregression'].intercept_
     feature_names = lin_reg_model[:-1].get_feature_names_out()
 
-    display_regression_coefficients.plot_coefficients(
+    plot_regression_coefficients.plot(
         coefs=linear_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Linear")
 
     # Lasso Regression Model
@@ -110,7 +101,7 @@ def main():
     y_intercept = lasso_model.named_steps['lassocv'].intercept_
     feature_names = lasso_model[:-1].get_feature_names_out()
 
-    display_regression_coefficients.plot_coefficients(
+    plot_regression_coefficients.plot(
         coefs=lasso_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Lasso")
 
     # Ridge Regression Model
@@ -131,7 +122,7 @@ def main():
     y_intercept = ridge_model.named_steps['ridgecv'].intercept_
     feature_names = ridge_model[:-1].get_feature_names_out()
 
-    display_regression_coefficients.plot_coefficients(
+    plot_regression_coefficients.plot(
         coefs=ridge_coefs, y_intercept=y_intercept, feature_names=feature_names, model_name="Ridge")
 
 

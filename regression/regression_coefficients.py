@@ -3,21 +3,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
-class RegressionCoefficients:
+class PlotRegressionCoefficients:
     def __init__(self):
         pass
 
     def _get_regression_equation(self, coefs: ndarray, y_intercept: float) -> str:
 
         equation = f"y = {y_intercept:.3f}"
+        combined_coefs = []
         for i in range(len(coefs)):
             operator = '-' if coefs[i] < 0 else '+'
             value = abs(coefs[i]) if coefs[i] < 0 else coefs[i]
-            equation += f' {operator} {value:.3f} x_{i + 1}'
+            combined_coefs.append(f' {operator} {value:.3f} x_{i + 1}')
 
-        return equation
+        return equation + "".join(combined_coefs)
 
-    def plot_coefficients(self, coefs: ndarray, y_intercept: float, feature_names: ndarray, model_name: str) -> None:
+    def plot(self, coefs: ndarray, y_intercept: float, feature_names: ndarray, model_name: str) -> None:
         coefs_df = pd.DataFrame(
             coefs, columns=['Coefficient Importance'], index=feature_names)
 
