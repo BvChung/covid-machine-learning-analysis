@@ -7,6 +7,7 @@ from sklearn.svm import SVC
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score, precision_score, recall_score, make_scorer
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_validate
+from display_plots import display_table
 
 
 def main():
@@ -34,9 +35,8 @@ def main():
 
     svm_rbf_kernel_model = SVC(kernel='rbf', random_state=42)
     svm_rbf_kernel_model.fit(X_train_scaled, y_train)
-    acc = svm_rbf_kernel_model.score(X_test_scaled, y_test)
-    print(f'Mean Accuracy: {acc:.3f}')
 
+    # Training set metrics
     stratkf = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
 
     scoring = {
@@ -48,18 +48,27 @@ def main():
     scores = cross_validate(
         svm_rbf_kernel_model, X_train_scaled, y_train, cv=stratkf, scoring=scoring)
 
-    table_data = [['Accuracy', round(scores["test_accuracy"].mean(), 3)],
-                  ['Precision', round(scores["test_precision"].mean(), 3)],
-                  ['Recall', round(scores["test_recall"].mean(), 3)]]
+    testing_set_table_data = [['Accuracy', round(scores["test_accuracy"].mean(), 3)],
+                              ['Precision', round(
+                                  scores["test_precision"].mean(), 3)],
+                              ['Recall', round(scores["test_recall"].mean(), 3)]]
 
-    fig, ax = plt.subplots(1, 1)
-    table = plt.table(cellText=table_data, colLabels=[
-        'Metric', 'Mean Value'], loc='center')
-    table.set_fontsize(11)
-    table.scale(1.1, 1.4)
-    ax.set_title("SVM RBF Kernel Cross Validation Scores")
-    ax.axis('off')
-    plt.show()
+    display_table(testing_set_table_data, ['Metric', 'Mean Value'],
+                  'SVM RBF Kernel Training Set Cross Validation Scores')
+
+    # Testing set metrics
+    y_pred = svm_rbf_kernel_model.predict(X_test_scaled)
+
+    test_acc_score = svm_rbf_kernel_model.score(X_test_scaled, y_test)
+    test_precision_score = precision_score(y_test, y_pred, average='micro')
+    test_recall_score = recall_score(y_test, y_pred, average='micro')
+
+    testing_set_table_data = [['Accuracy', round(test_acc_score, 3)],
+                              ['Precision', round(test_precision_score, 3)],
+                              ['Recall', round(test_recall_score, 3)]]
+
+    display_table(testing_set_table_data, ['Metric', 'Value'],
+                  'SVM RBF Kernel Testing Set Scores')
 
     # Test prediction
     point = us_covid_records_df.iloc[[10]].values
