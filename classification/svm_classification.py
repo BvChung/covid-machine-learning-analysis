@@ -18,7 +18,6 @@ def main():
     us_covid_records_df.dropna(inplace=True)
 
     hospitalization_need_labels = us_covid_records_df['hospitalization_need']
-    icu_requirement_labels = us_covid_records_df['icu_requirement']
 
     us_covid_records_df.drop(
         columns=['date', 'hospitalization_need', 'icu_requirement'], inplace=True)
